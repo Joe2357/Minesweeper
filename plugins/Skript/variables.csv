@@ -1,0 +1,20 @@
+# === Skript's variable storage ===
+# Please do not modify this file manually!
+#
+# version: 2.2-SNAPSHOT
+
+time.g_gidon, long, 0000000000000000
+time.jepy, long, 0000000000000000
+time.joe2357, long, 0000000000000000
+게임, boolean, 00
+게임.g_gidon, boolean, 00
+게임.jepy, boolean, 00
+게임.joe2357, boolean, 00
+게임플레이어, long, 0000000000000000
+난이도.g_gidon, long, 0000000000000000
+난이도.jepy, long, 0000000000000000
+난이도.joe2357, long, 0000000000000000
+지뢰.g_gidon, double, 3FF0000000000000
+지뢰.jepy, long, 000000000000000A
+지뢰.joe2357, double, 0000000000000000
+

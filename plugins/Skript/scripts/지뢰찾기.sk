@@ -1,0 +1,217 @@
+command /게임시작 [<text>]:
+	trigger:
+		if {게임.%player%} is true:
+			message "이미 게임이 실행중입니다."
+			stop
+		set {게임.%player%} to true
+		set {게임플레이어} to player
+		set {난이도.%player%} to arg 1
+		set {time.%player%} to 0
+		if arg 1 is "초급":
+			set {지뢰.%player%} to 10
+		else if arg 1 is "중급":
+			set {지뢰.%player%} to 40
+		set slot 4 of player's inventory to rail named "&fSet the &aFLAG"
+		set slot 5 of player's inventory to bone named "&c남은 폭탄 &0: &e%{지뢰.%player%}%"
+		run player cmd "/폭탄 설치 %arg 1%" as op
+		stop
+		
+command /리셋 [<text>]:
+	trigger:
+		set {게임.%player%} to false
+		set {게임플레이어} to 0
+		set {난이도.%player%} to 0
+		set {time.%player%} to 0
+		clear player's inventory
+		if arg 1 is "초급":
+			run player cmd "//pos1 -194,1,1351" as op
+			run player cmd "//pos2 -202,1,1359" as op
+			run player cmd "//set 22" as op
+			run player cmd "//pos1 -194,0,1351" as op
+			run player cmd "//pos2 -202,0,1359" as op
+			run player cmd "//set 155" as op
+			stop
+		else if arg 1 is "중급":
+			run player cmd "//pos1 -196,1,1412" as op
+			run player cmd "//pos2 -211,1,1427" as op
+			run player cmd "//set 22" as op
+			run player cmd "//pos1 -196,0,1412" as op
+			run player cmd "//pos2 -211,0,1427" as op
+			run player cmd "//set 155" as op
+			stop
+		
+command /폭탄 [<text>] [<text>]:
+	trigger:
+		if arg 1 is "설치":
+			if arg 2 is "초급":
+				wait 1 ticks
+				run player cmd "/tppos -198 2 1355 90 0" as op
+				run player cmd "//pos1 -194,0,1351" as op
+				run player cmd "//pos2 -202,0,1359" as op
+				run player cmd "//set 90%%155,10%%35:15" as op
+				run player cmd "/폭탄 체크 초급" as op
+				stop
+			else if arg 2 is "중급":
+				wait 1 ticks
+				run player cmd "/tppos -202 2 1419 90 0" as op
+				run player cmd "//pos1 -196,0,1412" as op
+				run player cmd "//pos2 -211,0,1427" as op
+				run player cmd "//set 84%%155,16%%35:15" as op
+				run player cmd "/폭탄 체크 중급" as op
+				stop
+		if arg 1 is "체크":
+			if arg 2 is "초급":
+				set {_폭탄.%player%} to 0
+				loop all blocks in radius 10 around player:
+					if loop-block is black wool:
+						add 1 to {_폭탄.%player%}
+				if {_폭탄.%player%} is not 10:
+					run player cmd "/폭탄 설치 초급" as op
+				else:
+					loop all blocks in radius 10 around player:
+						if loop-block is lapis lazuli block:
+							set {_trash3.%player%} to 0
+							loop all blocks in radius 2 around loop-block:
+								if loop-block-2 is black wool:
+									add 1 to {_trash3.%player%}
+							if {_trash3.%player%} >= 8:
+								run player cmd "/폭탄 설치 초급" as op
+								stop
+					run player cmd "/지우개" as op
+					broadcast "폭탄 설정이 완료되었습니다. 기본은 10개입니다."
+				stop
+			else if arg 2 is "중급":
+				set {_폭탄.%player%} to 0
+				loop all blocks in radius 20 around player:
+					if loop-block is black wool:
+						add 1 to {_폭탄.%player%}
+				if {_폭탄.%player%} is not 40:
+					run player cmd "/폭탄 설치 중급" as op
+				else:
+					loop all blocks in radius 20 around player:
+						if loop-block is lapis lazuli block:
+							set {_trash3.%player%} to 0
+							loop all blocks in radius 2 around loop-block:
+								if loop-block-2 is black wool:
+									add 1 to {_trash3.%player%}
+							if {_trash3.%player%} >= 8:
+								run player cmd "/폭탄 설치 중급" as op
+								stop
+					run player cmd "/지우개" as op
+					broadcast "폭탄 설정이 완료되었습니다. 기본은 40개입니다."
+				stop
+		
+command /지우개:
+	trigger:
+		loop 100 times:
+			message "&f"
+		stop
+			
+on inventory click:
+	if {게임.%player%} is true:
+		cancel event
+		
+on drop:
+	if {게임.%player%} is true:
+		cancel event
+		
+on break:
+	if {게임.%player%} is not true:
+		stop
+	if event-block is sponge:
+		cancel event
+		stop
+	else if event-block is wool:
+		cancel event	
+		stop
+	else if event-block is lapis lazuli block:
+		if {게임.%player%} is true:
+			set {_bomb} to 0
+			loop all blocks in radius 1 of event-block:
+				if loop-block is black wool:
+					wait 1 tick
+					run player cmd "/리셋 %{난이도.%player%}%" as op
+					run player cmd "/지우개" as op
+					broadcast "탈락!"
+					stop
+			wait 1 tick
+			loop all blocks in radius 2 of event-block:
+				if loop-block is black wool:
+					add 1 to {_bomb}
+			if {_bomb} is 0:
+				set block at location at event-block to 35:0		
+			else if {_bomb} is 1:
+				set block at location at event-block to 35:1
+			else if {_bomb} is 2:
+				set block at location at event-block to 35:2
+			else if {_bomb} is 3:
+				set block at location at event-block to 35:3
+			else if {_bomb} is 4:
+				set block at location at event-block to 35:4
+			else if {_bomb} is 5:
+				set block at location at event-block to 35:5
+			
+on rightclick holding rail:
+	if {게임.%player%} is true:
+		cancel event
+		if {지뢰.%player%} = 0:
+			message "더 이상 깃발을 세울 수 없습니다."
+			stop
+		if event-block is lapis lazuli block:
+			set block at location at event-location to sponge
+			remove 1 from {지뢰.%player%}
+		else if event-block is sponge:
+			set block at location at event-location to lapis lazuli block
+			add 1 to {지뢰.%player%}	
+			
+on chat:
+	if player is "Joe2357":
+		cancel event
+		broadcast "&3[ &aJoe2357 &3] &f%chat message%"
+	else if player is "G_Gidon":
+		cancel event
+		broadcast "&3< &bG_Gidon &3> &f%chat message%"
+		
+every seconds in "world":
+	loop all players:
+		if {게임.%loop-player%} is not true:
+			stop
+		add 1 to {time.%loop-player%}
+		set slot 3 of loop-player's inventory to clock named "&eTime &0: &f%{time.%loop-player%}%"
+		if {난이도.%loop-player%} is "초급":
+			loop all blocks in radius 20 of loop-players:
+				if loop-block is lapis lazuli block:
+					stop
+		else if {난이도.%loop-player%} is "중급":
+			loop all blocks in radius 40 of loop-players:
+				if loop-block is lapis lazuli block:
+					stop
+		broadcast "폭탄을 모두 찾았습니다!"
+		broadcast "걸린 시간은 %{time.%loop-player%}%초 입니다."
+		wait 1 tick
+		run loop-player cmd "/리셋 %{난이도.%loop-player%}%" as op
+
+every 1 tick:
+	loop all players:
+		if {게임.%loop-player%} is true:
+			set slot 5 of loop-player's inventory to bone named "&c남은 폭탄 &0: &e%{지뢰.%loop-player%}%"
+			loop all blocks in radius 50 of {게임플레이어}:
+				if loop-block is white wool:
+					loop all blocks in radius 1 of loop-block:
+						if loop-block-2 is lapis lazuli block:
+							set {_trash2.%loop-player%} to 0
+							loop all blocks in radius 2 of loop-block-2:
+								if loop-block-3 is black wool:
+									add 1 to {_trash2.%loop-player%}
+							if {_trash2.%loop-player%} is 0:
+								set block at location at loop-block-2 to 35:0
+							else if {_trash2.%loop-player%} is 1:
+								set block at location at loop-block-2 to 35:1
+							else if {_trash2.%loop-player%} is 2:
+								set block at location at loop-block-2 to 35:2
+							else if {_trash2.%loop-player%} is 3:
+								set block at location at loop-block-2 to 35:3
+							else if {_trash2.%loop-player%} is 4:
+								set block at location at loop-block-2 to 35:4
+							else if {_trash2.%loop-player%} is 5:
+								set block at location at loop-block-2 to 35:5

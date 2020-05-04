@@ -1,0 +1,2 @@
+on server list ping:
+	set motd to "&3[&b&lMCMPS&3]&6&lMineSweeper"
